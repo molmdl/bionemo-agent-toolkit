@@ -25,6 +25,7 @@ npx skills add NVIDIA-BioNeMo/bionemo-agent-toolkit --skill boltz2-nim --yes
 # target a specific agent (repeatable)
 npx skills add NVIDIA-BioNeMo/bionemo-agent-toolkit --skill boltz2-nim --agent claude-code
 npx skills add NVIDIA-BioNeMo/bionemo-agent-toolkit --skill boltz2-nim --agent codex
+npx skills add NVIDIA-BioNeMo/bionemo-agent-toolkit --skill boltz2-nim --agent opencode
 
 # browse the catalog without installing
 npx skills add NVIDIA-BioNeMo/bionemo-agent-toolkit --list
@@ -33,8 +34,28 @@ npx skills add NVIDIA-BioNeMo/bionemo-agent-toolkit --list
 The repo also ships self-hosted plugin marketplaces:
  - **Codex:** [.agents/plugins/marketplace.json](.agents/plugins/marketplace.json)
  - **Claude Code:** [.claude-plugin/marketplace.json](.claude-plugin/marketplace.json)
+ - **OpenCode:** [.opencode/marketplace.json](.opencode/marketplace.json)
 so the `bionemo-agent-toolkit` plugin installs through each agent's native plugin
 flow as well. Skills are also discoverable by partner harnesses directly from the repo.
+
+### OpenCode no-npx profiles
+
+OpenCode migration assets are generated from upstream Claude/Codex plugin metadata:
+
+```bash
+# regenerate OpenCode port artifacts after upstream skill/plugin updates
+bash scripts/opencode/sync_upstream.sh
+
+# install full main-standard profile (no npx)
+bash scripts/opencode/install_local_skills.sh --profile main-standard
+
+# install minimal profile (no npx)
+bash scripts/opencode/install_local_skills.sh --profile minimal-no-npx
+```
+
+Profiles:
+- `main-standard`: full skill set mapped for the `main` branch workflow.
+- `minimal-no-npx`: reduced set of core skills/scripts for migration workflows that must avoid `npx`.
 
 ## Skill Catalog
 

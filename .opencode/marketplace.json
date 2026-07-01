@@ -1,0 +1,23 @@
+{
+  "name": "bionemo-agent-toolkit-opencode",
+  "owner": {
+    "name": "NVIDIA BioNeMo",
+    "url": "https://github.com/NVIDIA-BioNeMo/bionemo-agent-toolkit"
+  },
+  "metadata": {
+    "description": "OpenCode marketplace for NVIDIA BioNeMo skills with standard and minimal (no npx) profiles.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "bionemo-agent-toolkit-opencode-standard",
+      "source": "./plugins/bionemo-agent-toolkit/.opencode-plugin/plugin.json",
+      "description": "Full standard OpenCode profile generated from upstream skills."
+    },
+    {
+      "name": "bionemo-agent-toolkit-opencode-minimal",
+      "source": "./plugins/bionemo-agent-toolkit/.opencode-plugin/minimal-plugin.json",
+      "description": "Minimal no-npx OpenCode profile with core skills/scripts only."
+    }
+  ]
+}
