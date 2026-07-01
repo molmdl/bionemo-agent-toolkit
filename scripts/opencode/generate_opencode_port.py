@@ -47,6 +47,14 @@ def _build_plugin(
     plugin["displayName"] = claude_plugin.get(
         "displayName", codex_plugin.get("displayName", codex_plugin.get("name"))
     )
+    if profile == "minimal-no-npx":
+        interface = dict(plugin.get("interface", {}))
+        interface["defaultPrompt"] = [
+            "Predict the structure of insulin with Boltz2",
+            "Dock a small molecule target with DiffDock",
+            "Design a de novo binder for a target with RFdiffusion",
+        ]
+        plugin["interface"] = interface
     return plugin
 
 
