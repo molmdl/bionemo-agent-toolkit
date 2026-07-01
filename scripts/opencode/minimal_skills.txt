@@ -1,0 +1,6 @@
+boltz2-nim
+diffdock-nim
+genmol-nim
+msa-search-nim
+openfold3-nim
+rfdiffusion-nim
