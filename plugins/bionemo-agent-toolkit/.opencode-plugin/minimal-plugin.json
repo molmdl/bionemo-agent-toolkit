@@ -1,53 +1,23 @@
 {
-  "name": "bionemo-agent-toolkit",
+  "_note": "This file is NOT an OpenCode plugin manifest. OpenCode does not use this format.",
+  "_see": "https://opencode.ai/docs/skills",
+  "name": "bionemo-agent-toolkit-minimal",
   "version": "0.1.0",
-  "description": "NVIDIA BioNeMo agent skills for life sciences \u2014 protein folding, molecular docking, generative chemistry, genomics, protein design, and biomarker discovery as ready-to-call tools.",
-  "author": {
-    "name": "NVIDIA BioNeMo",
-    "url": "https://github.com/NVIDIA-BioNeMo/bionemo-agent-toolkit"
-  },
+  "description": "NVIDIA BioNeMo agent skills for life sciences — minimal core skills for structure prediction, docking, and generative chemistry.",
   "homepage": "https://github.com/NVIDIA-BioNeMo/bionemo-agent-toolkit",
-  "repository": "https://github.com/NVIDIA-BioNeMo/bionemo-agent-toolkit",
-  "license": "Apache-2.0",
-  "keywords": [
-    "bionemo",
-    "life-sciences",
-    "drug-discovery",
-    "protein-folding",
-    "molecular-docking",
-    "generative-chemistry",
-    "genomics",
-    "protein-design",
-    "cuda-x",
-    "nim"
-  ],
-  "skills": [
-    "./skills/boltz2-nim",
-    "./skills/diffdock-nim",
-    "./skills/genmol-nim",
-    "./skills/msa-search-nim",
-    "./skills/openfold3-nim",
-    "./skills/rfdiffusion-nim"
-  ],
-  "interface": {
-    "displayName": "NVIDIA BioNeMo Agent Toolkit",
-    "shortDescription": "Turn any agent into a life-science expert with NVIDIA BioNeMo skills.",
-    "longDescription": "A decade of NVIDIA life-sciences libraries, NIMs, and open models as portable agent skills: structure prediction, docking, generative chemistry, genomics, and de novo protein design. The plugin helps an agent pick the right tool, prepare inputs, run it, and interpret outputs.",
-    "developerName": "NVIDIA BioNeMo",
-    "category": "Science",
-    "capabilities": [
-      "Interactive",
-      "Write"
-    ],
-    "brandColor": "#76b900",
-    "defaultPrompt": [
-      "Predict the structure of insulin with Boltz2",
-      "Dock a small molecule target with DiffDock",
-      "Design a de novo binder for a target with RFdiffusion"
+  "opencode_install": {
+    "summary": "OpenCode discovers skills from SKILL.md files. To install the minimal profile, run: bash scripts/opencode/install_local_skills.sh --profile minimal-no-npx",
+    "global_dir": "~/.config/opencode/skills/<skill-name>/SKILL.md",
+    "project_dir": ".opencode/skills/<skill-name>/SKILL.md",
+    "config_based": "Add skills.paths to opencode.json — see opencode/config/opencode.sample.json",
+    "minimal_skills": [
+      "boltz2-nim",
+      "diffdock-nim",
+      "genmol-nim",
+      "msa-search-nim",
+      "openfold3-nim",
+      "rfdiffusion-nim"
     ]
-  },
-  "targetAgent": "opencode",
-  "profile": "minimal-no-npx",
-  "requiresNpx": false,
-  "displayName": "NVIDIA BioNeMo Agent Toolkit"
+  }
 }
+

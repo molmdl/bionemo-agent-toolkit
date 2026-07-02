@@ -2,7 +2,6 @@
   "name": "opencode-main-standard",
   "branch": "main",
   "profile": "main-standard",
-  "requiresNpx": false,
   "skills": [
     "boltz2-nim",
     "complexa-design",
@@ -35,6 +34,6 @@
     "proteinmpnn-nim",
     "rfdiffusion-nim"
   ],
-  "syncScript": "scripts/opencode/sync_upstream.sh",
-  "installScript": "scripts/opencode/install_local_skills.sh"
+  "installScript": "scripts/opencode/install_local_skills.sh",
+  "configDocs": "opencode/config/opencode.sample.json"
 }

@@ -2,7 +2,6 @@
   "name": "opencode-minimal-no-npx",
   "branch": "minimal",
   "profile": "minimal-no-npx",
-  "requiresNpx": false,
   "skills": [
     "boltz2-nim",
     "diffdock-nim",
@@ -11,6 +10,6 @@
     "openfold3-nim",
     "rfdiffusion-nim"
   ],
-  "syncScript": "scripts/opencode/sync_upstream.sh",
-  "installScript": "scripts/opencode/install_local_skills.sh"
+  "installScript": "scripts/opencode/install_local_skills.sh",
+  "configDocs": "opencode/config/opencode.sample.json"
 }
