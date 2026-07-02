@@ -1,0 +1,39 @@
+name: OpenCode Port Sync Check
+
+on:
+  pull_request:
+    paths:
+      - "plugins/bionemo-agent-toolkit/skills/**"
+      - "scripts/opencode/**"
+      - "opencode/**"
+      - ".github/workflows/opencode-sync-check.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "plugins/bionemo-agent-toolkit/skills/**"
+      - "scripts/opencode/**"
+      - "opencode/**"
+      - ".github/workflows/opencode-sync-check.yml"
+  workflow_dispatch:
+
+jobs:
+  sync-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Regenerate OpenCode artifacts
+        run: bash scripts/opencode/sync_upstream.sh
+
+      - name: Verify generated artifacts are committed
+        run: |
+          git diff -- opencode/config/opencode.sample.json opencode/workflows/main-standard.json opencode/workflows/minimal-no-npx.json
+          git diff --quiet -- opencode/config/opencode.sample.json opencode/workflows/main-standard.json opencode/workflows/minimal-no-npx.json
