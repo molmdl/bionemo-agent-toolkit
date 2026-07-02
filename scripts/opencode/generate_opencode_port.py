@@ -78,15 +78,9 @@ def _build_opencode_sample(skills_dir: Path) -> dict:
     """
     return {
         "$schema": "https://opencode.ai/config.json",
-        "_comment": (
-            "Replace <path-to-bionemo-agent-toolkit> with the absolute path to "
-            "the cloned bionemo-agent-toolkit repository on your machine, "
-            "or run 'bash scripts/opencode/install_local_skills.sh' to install "
-            "skills directly into ~/.config/opencode/skills/"
-        ),
         "skills": {
             "paths": [
-                "<path-to-bionemo-agent-toolkit>/plugins/bionemo-agent-toolkit/skills"
+                "<path-to-bionemo-agent-toolkit>/.opencode/skills"
             ]
         }
     }
