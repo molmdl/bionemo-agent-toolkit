@@ -54,16 +54,23 @@ bash scripts/opencode/install_local_skills.sh --profile minimal-no-npx
 Skills are then available globally to any OpenCode project.
 
 **Option B — config-based** (project-scoped):
-Add the following to your project's `opencode.json` or `~/.config/opencode/opencode.json`:
+Install a project-local OpenCode skill directory (canonicalized names):
+```bash
+bash scripts/opencode/install_local_skills.sh --dest .opencode/skills
+```
+
+Then add the following to your project's `opencode.json` or `~/.config/opencode/opencode.json`:
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
   "skills": {
-    "paths": ["/absolute/path/to/bionemo-agent-toolkit/plugins/bionemo-agent-toolkit/skills"]
+    "paths": ["/absolute/path/to/bionemo-agent-toolkit/.opencode/skills"]
   }
 }
 ```
 A ready-to-edit template is at [`opencode/config/opencode.sample.json`](opencode/config/opencode.sample.json).
+Use the install script path above to avoid OpenCode directory-name mismatches for legacy
+skill source directories such as `cuEquivariance/` and `nvMolKit/`.
 
 **Regenerate after upstream updates:**
 ```bash
