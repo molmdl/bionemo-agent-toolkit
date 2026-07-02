@@ -1,16 +1,31 @@
 #!/usr/bin/env python3
-"""Generate opencode port assets from existing claude/codex plugin metadata."""
+"""Generate opencode port assets from existing skill metadata.
+
+Unlike the Claude/Codex port (which uses a plugin.json marketplace format),
+OpenCode discovers skills via SKILL.md files in specific directories and via
+the 'skills.paths' field in opencode.json.  This script generates:
+
+  opencode/config/opencode.sample.json   - ready-to-use opencode.json snippet
+  opencode/workflows/main-standard.json  - workflow metadata (skill list)
+  opencode/workflows/minimal-no-npx.json - minimal workflow metadata
+
+It no longer generates a .opencode-plugin/plugin.json in the Claude/Codex
+marketplace format because that format is not recognized by OpenCode.
+
+OpenCode skill installation:
+  Global  : ~/.config/opencode/skills/<name>/SKILL.md
+  Project : .opencode/skills/<name>/SKILL.md
+  Config  : skills.paths in opencode.json (any directory with */SKILL.md)
+
+See: https://opencode.ai/docs/skills
+"""
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
-
-
-def _read_json(path: Path) -> dict:
-    with path.open("r", encoding="utf-8") as f:
-        return json.load(f)
 
 
 def _write_json(path: Path, data: dict | list) -> None:
@@ -28,6 +43,20 @@ def _list_skills(skills_dir: Path) -> list[str]:
     )
 
 
+def _read_skill_name(skill_dir: Path) -> str:
+    """Parse the 'name:' field from SKILL.md YAML frontmatter."""
+    skill_md = skill_dir / "SKILL.md"
+    text = skill_md.read_text(encoding="utf-8")
+    if not text.startswith("---"):
+        raise ValueError(f"No frontmatter in {skill_md}")
+    end = text.index("---", 3)
+    for line in text[3:end].splitlines():
+        m = re.match(r"^name:\s*(.+)$", line.strip())
+        if m:
+            return m.group(1).strip()
+    raise ValueError(f"No 'name:' field found in {skill_md}")
+
+
 def _read_minimal_skills(path: Path) -> list[str]:
     return [
         line.strip()
@@ -36,51 +65,29 @@ def _read_minimal_skills(path: Path) -> list[str]:
     ]
 
 
-def _build_plugin(
-    codex_plugin: dict, claude_plugin: dict, profile: str, skills: list[str]
-) -> dict:
-    plugin = dict(codex_plugin)
-    plugin["targetAgent"] = "opencode"
-    plugin["profile"] = profile
-    plugin["requiresNpx"] = False
-    plugin["skills"] = [f"./skills/{skill}" for skill in skills]
-    plugin["displayName"] = claude_plugin.get(
-        "displayName", codex_plugin.get("displayName", codex_plugin.get("name"))
-    )
-    if profile == "minimal-no-npx":
-        interface = dict(plugin.get("interface", {}))
-        interface["defaultPrompt"] = [
-            "Predict the structure of insulin with Boltz2",
-            "Dock a small molecule target with DiffDock",
-            "Design a de novo binder for a target with RFdiffusion",
-        ]
-        plugin["interface"] = interface
-    return plugin
+def _build_opencode_sample(skills_dir: Path) -> dict:
+    """Build a ready-to-use opencode.json snippet.
 
+    Users can paste this into their project's opencode.json or into
+    ~/.config/opencode/opencode.json for global availability.
 
-def _build_marketplace(claude_marketplace: dict) -> dict:
-    marketplace = dict(claude_marketplace)
-    marketplace["name"] = "bionemo-agent-toolkit-opencode"
-    marketplace["metadata"] = {
-        "description": (
-            "OpenCode marketplace for NVIDIA BioNeMo skills with standard and "
-            "minimal (no npx) profiles."
+    The path placeholder must be replaced with the actual absolute path to the
+    cloned bionemo-agent-toolkit repository on the user's machine.
+    """
+    return {
+        "$schema": "https://opencode.ai/config.json",
+        "_comment": (
+            "Replace <path-to-bionemo-agent-toolkit> with the absolute path to "
+            "the cloned bionemo-agent-toolkit repository on your machine, "
+            "or run 'bash scripts/opencode/install_local_skills.sh' to install "
+            "skills directly into ~/.config/opencode/skills/"
         ),
-        "version": claude_marketplace.get("metadata", {}).get("version", "0.1.0"),
+        "skills": {
+            "paths": [
+                "<path-to-bionemo-agent-toolkit>/plugins/bionemo-agent-toolkit/skills"
+            ]
+        }
     }
-    marketplace["plugins"] = [
-        {
-            "name": "bionemo-agent-toolkit-opencode-standard",
-            "source": "./plugins/bionemo-agent-toolkit/.opencode-plugin/plugin.json",
-            "description": "Full standard OpenCode profile generated from upstream skills.",
-        },
-        {
-            "name": "bionemo-agent-toolkit-opencode-minimal",
-            "source": "./plugins/bionemo-agent-toolkit/.opencode-plugin/minimal-plugin.json",
-            "description": "Minimal no-npx OpenCode profile with core skills/scripts only.",
-        },
-    ]
-    return marketplace
 
 
 def _build_workflow(profile: str, branch: str, skills: list[str]) -> dict:
@@ -88,10 +95,9 @@ def _build_workflow(profile: str, branch: str, skills: list[str]) -> dict:
         "name": f"opencode-{profile}",
         "branch": branch,
         "profile": profile,
-        "requiresNpx": False,
         "skills": skills,
-        "syncScript": "scripts/opencode/sync_upstream.sh",
         "installScript": "scripts/opencode/install_local_skills.sh",
+        "configDocs": "opencode/config/opencode.sample.json",
     }
 
 
@@ -108,45 +114,58 @@ def main() -> int:
     root = args.repo_root.resolve()
     plugin_root = root / "plugins" / "bionemo-agent-toolkit"
     skills_dir = plugin_root / "skills"
-    codex_plugin_path = plugin_root / ".codex-plugin" / "plugin.json"
-    claude_plugin_path = plugin_root / ".claude-plugin" / "plugin.json"
-    claude_marketplace_path = root / ".claude-plugin" / "marketplace.json"
     minimal_list_path = root / "scripts" / "opencode" / "minimal_skills.txt"
 
-    all_skills = _list_skills(skills_dir)
+    all_skill_dirs = _list_skills(skills_dir)
     minimal_skills = _read_minimal_skills(minimal_list_path)
-    unknown = sorted(set(minimal_skills) - set(all_skills))
+    unknown = sorted(set(minimal_skills) - set(all_skill_dirs))
     if unknown:
-        raise ValueError(f"Unknown minimal skill(s): {', '.join(unknown)}")
+        raise ValueError(f"Unknown minimal skill(s) in minimal_skills.txt: {', '.join(unknown)}")
 
-    codex_plugin = _read_json(codex_plugin_path)
-    claude_plugin = _read_json(claude_plugin_path)
-    claude_marketplace = _read_json(claude_marketplace_path)
+    # Validate that each skill's SKILL.md name matches OpenCode's requirements
+    # (lowercase alphanumeric + hyphens only; must match directory name)
+    opencode_name_re = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+    name_issues: list[str] = []
+    for skill_dir_name in all_skill_dirs:
+        try:
+            skill_name = _read_skill_name(skills_dir / skill_dir_name)
+        except ValueError as e:
+            name_issues.append(str(e))
+            continue
+        if not opencode_name_re.match(skill_name):
+            name_issues.append(
+                f"{skill_dir_name}: SKILL.md name '{skill_name}' does not match "
+                f"OpenCode name pattern (^[a-z0-9]+(-[a-z0-9]+)*$)"
+            )
+        if skill_name != skill_dir_name:
+            # This is a warning, not an error — the install script handles the rename.
+            print(
+                f"[warn] {skill_dir_name}: SKILL.md name '{skill_name}' differs from "
+                f"directory name. install_local_skills.sh will symlink as '{skill_name}'."
+            )
+    if name_issues:
+        for issue in name_issues:
+            print(f"[error] {issue}")
+        raise SystemExit("Fix skill name issues before generating OpenCode port.")
 
-    standard_plugin = _build_plugin(
-        codex_plugin=codex_plugin,
-        claude_plugin=claude_plugin,
-        profile="main-standard",
-        skills=all_skills,
-    )
-    minimal_plugin = _build_plugin(
-        codex_plugin=codex_plugin,
-        claude_plugin=claude_plugin,
-        profile="minimal-no-npx",
-        skills=minimal_skills,
-    )
+    # Generate sample opencode.json config (the correct install mechanism)
+    sample_config = _build_opencode_sample(skills_dir)
+    _write_json(root / "opencode" / "config" / "opencode.sample.json", sample_config)
 
-    _write_json(plugin_root / ".opencode-plugin" / "plugin.json", standard_plugin)
-    _write_json(plugin_root / ".opencode-plugin" / "minimal-plugin.json", minimal_plugin)
-    _write_json(root / ".opencode" / "marketplace.json", _build_marketplace(claude_marketplace))
+    # Generate workflow metadata
     _write_json(
         root / "opencode" / "workflows" / "main-standard.json",
-        _build_workflow("main-standard", "main", all_skills),
+        _build_workflow("main-standard", "main", all_skill_dirs),
     )
     _write_json(
         root / "opencode" / "workflows" / "minimal-no-npx.json",
         _build_workflow("minimal-no-npx", "minimal", minimal_skills),
     )
+
+    print("OpenCode port artifacts generated:")
+    print(f"  opencode/config/opencode.sample.json  — paste into opencode.json to add all skills")
+    print(f"  opencode/workflows/main-standard.json — full skill list metadata")
+    print(f"  opencode/workflows/minimal-no-npx.json — minimal skill list metadata")
     return 0
 
 

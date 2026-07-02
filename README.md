@@ -31,31 +31,48 @@ npx skills add NVIDIA-BioNeMo/bionemo-agent-toolkit --skill boltz2-nim --agent o
 npx skills add NVIDIA-BioNeMo/bionemo-agent-toolkit --list
 ```
 
-The repo also ships self-hosted plugin marketplaces:
+The repo ships self-hosted plugin marketplaces for Codex and Claude Code:
  - **Codex:** [.agents/plugins/marketplace.json](.agents/plugins/marketplace.json)
  - **Claude Code:** [.claude-plugin/marketplace.json](.claude-plugin/marketplace.json)
- - **OpenCode:** [.opencode/marketplace.json](.opencode/marketplace.json)
-so the `bionemo-agent-toolkit` plugin installs through each agent's native plugin
-flow as well. Skills are also discoverable by partner harnesses directly from the repo.
 
-### OpenCode no-npx profiles
+Skills are also discoverable by partner harnesses directly from the repo.
 
-OpenCode migration assets are generated from upstream Claude/Codex plugin metadata:
+### OpenCode
 
+OpenCode discovers skills from `SKILL.md` files in standard directories.
+Install BioNeMo skills using either of these approaches:
+
+**Option A — global symlink install** (recommended):
 ```bash
-# regenerate OpenCode port artifacts after upstream skill/plugin updates
-bash scripts/opencode/sync_upstream.sh
+# Install all skills globally (symlinks to ~/.config/opencode/skills/)
+bash scripts/opencode/install_local_skills.sh
 
-# install full main-standard profile (no npx)
-bash scripts/opencode/install_local_skills.sh --profile main-standard
-
-# install minimal profile (no npx)
+# Install minimal profile only
 bash scripts/opencode/install_local_skills.sh --profile minimal-no-npx
 ```
 
+Skills are then available globally to any OpenCode project.
+
+**Option B — config-based** (project-scoped):
+Add the following to your project's `opencode.json` or `~/.config/opencode/opencode.json`:
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "skills": {
+    "paths": ["/absolute/path/to/bionemo-agent-toolkit/plugins/bionemo-agent-toolkit/skills"]
+  }
+}
+```
+A ready-to-edit template is at [`opencode/config/opencode.sample.json`](opencode/config/opencode.sample.json).
+
+**Regenerate after upstream updates:**
+```bash
+bash scripts/opencode/sync_upstream.sh
+```
+
 Profiles:
-- `main-standard`: full skill set mapped for the `main` branch workflow.
-- `minimal-no-npx`: reduced set of core skills/scripts for migration workflows that must avoid `npx`.
+- `main-standard`: full skill set (default).
+- `minimal-no-npx`: reduced core set (Boltz2, DiffDock, GenMol, MSA-Search, OpenFold3, RFdiffusion).
 
 ## Skill Catalog
 

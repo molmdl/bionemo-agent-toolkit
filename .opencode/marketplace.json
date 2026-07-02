@@ -1,23 +1,12 @@
 {
-  "name": "bionemo-agent-toolkit-opencode",
-  "owner": {
-    "name": "NVIDIA BioNeMo",
-    "url": "https://github.com/NVIDIA-BioNeMo/bionemo-agent-toolkit"
-  },
-  "metadata": {
-    "description": "OpenCode marketplace for NVIDIA BioNeMo skills with standard and minimal (no npx) profiles.",
-    "version": "0.1.0"
-  },
-  "plugins": [
-    {
-      "name": "bionemo-agent-toolkit-opencode-standard",
-      "source": "./plugins/bionemo-agent-toolkit/.opencode-plugin/plugin.json",
-      "description": "Full standard OpenCode profile generated from upstream skills."
-    },
-    {
-      "name": "bionemo-agent-toolkit-opencode-minimal",
-      "source": "./plugins/bionemo-agent-toolkit/.opencode-plugin/minimal-plugin.json",
-      "description": "Minimal no-npx OpenCode profile with core skills/scripts only."
-    }
-  ]
+  "_note": "OpenCode does not have a marketplace concept. This file is kept for reference only.",
+  "_see": "https://opencode.ai/docs/skills",
+  "name": "bionemo-agent-toolkit",
+  "description": "NVIDIA BioNeMo skills for OpenCode — install via scripts/opencode/install_local_skills.sh or add skills.paths to opencode.json (see opencode/config/opencode.sample.json).",
+  "opencode_install": {
+    "global_symlink": "bash scripts/opencode/install_local_skills.sh",
+    "config_based": "opencode/config/opencode.sample.json",
+    "docs": "https://opencode.ai/docs/skills"
+  }
 }
+
