@@ -87,13 +87,15 @@ def _read_skill_name(skill_md: pathlib.Path) -> str:
     text = skill_md.read_text(encoding="utf-8")
     if not text.startswith("---"):
         raise ValueError(f"No frontmatter in {skill_md}")
-    end = text.index("---", 3)
+    end = text.find("---", 3)
+    if end == -1:
+        raise ValueError(f"Frontmatter in {skill_md} is missing closing '---' delimiter")
     frontmatter = text[3:end]
     for line in frontmatter.splitlines():
         m = re.match(r"^name:\s*(.+)$", line.strip())
         if m:
             return m.group(1).strip()
-    raise ValueError(f"No 'name:' field found in {skill_md}")
+    raise ValueError(f"No 'name:' field found in frontmatter of {skill_md}")
 
 
 workflow_path = pathlib.Path(sys.argv[1])
@@ -133,5 +135,6 @@ echo ""
 echo "OpenCode will discover skills automatically from this directory."
 echo "You can also add a skills.paths entry to your opencode.json:"
 echo ""
-echo "  {\"skills\": {\"paths\": [\"$(dirname "$(realpath "${DEST}")")/skills\"]}}"
+DEST_RESOLVED="$(python3 -c "import pathlib, sys; print(pathlib.Path(sys.argv[1]).expanduser().resolve())" "${DEST}")"
+echo "  {\"skills\": {\"paths\": [\"${DEST_RESOLVED}\"]}}"
 echo ""

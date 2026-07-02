@@ -49,12 +49,14 @@ def _read_skill_name(skill_dir: Path) -> str:
     text = skill_md.read_text(encoding="utf-8")
     if not text.startswith("---"):
         raise ValueError(f"No frontmatter in {skill_md}")
-    end = text.index("---", 3)
+    end = text.find("---", 3)
+    if end == -1:
+        raise ValueError(f"Frontmatter in {skill_md} is missing closing '---' delimiter")
     for line in text[3:end].splitlines():
         m = re.match(r"^name:\s*(.+)$", line.strip())
         if m:
             return m.group(1).strip()
-    raise ValueError(f"No 'name:' field found in {skill_md}")
+    raise ValueError(f"No 'name:' field found in frontmatter of {skill_md}")
 
 
 def _read_minimal_skills(path: Path) -> list[str]:
