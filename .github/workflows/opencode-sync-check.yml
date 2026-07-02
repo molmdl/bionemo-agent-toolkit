@@ -37,6 +37,6 @@ jobs:
 
       - name: Verify generated artifacts are committed
         run: |
-          GENERATED_FILES="opencode/config/opencode.sample.json opencode/workflows/main-standard.json opencode/workflows/minimal-no-npx.json"
-          git diff -- ${GENERATED_FILES}
-          git diff --quiet -- ${GENERATED_FILES}
+          mapfile -t GENERATED_FILES < <(python3 scripts/opencode/generate_opencode_port.py --print-generated-files)
+          git diff -- "${GENERATED_FILES[@]}"
+          git diff --quiet -- "${GENERATED_FILES[@]}"

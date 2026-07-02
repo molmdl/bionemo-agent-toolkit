@@ -27,6 +27,12 @@ import json
 import re
 from pathlib import Path
 
+GENERATED_ARTIFACTS = (
+    Path("opencode/config/opencode.sample.json"),
+    Path("opencode/workflows/main-standard.json"),
+    Path("opencode/workflows/minimal-no-npx.json"),
+)
+
 
 def _write_json(path: Path, data: dict | list) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -97,6 +103,10 @@ def _build_workflow(profile: str, branch: str, skills: list[str]) -> dict:
     }
 
 
+def _generated_artifact_paths(root: Path) -> list[Path]:
+    return [root / path for path in GENERATED_ARTIFACTS]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -105,9 +115,19 @@ def main() -> int:
         default=Path(__file__).resolve().parents[2],
         help="Repository root.",
     )
+    parser.add_argument(
+        "--print-generated-files",
+        action="store_true",
+        help="Print generated artifact paths relative to the repository root and exit.",
+    )
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
+    if args.print_generated_files:
+        for path in GENERATED_ARTIFACTS:
+            print(path.as_posix())
+        return 0
+
     plugin_root = root / "plugins" / "bionemo-agent-toolkit"
     skills_dir = plugin_root / "skills"
     minimal_list_path = root / "scripts" / "opencode" / "minimal_skills.txt"
@@ -146,15 +166,16 @@ def main() -> int:
 
     # Generate sample opencode.json config (the correct install mechanism)
     sample_config = _build_opencode_sample(skills_dir)
-    _write_json(root / "opencode" / "config" / "opencode.sample.json", sample_config)
+    generated_artifacts = _generated_artifact_paths(root)
+    _write_json(generated_artifacts[0], sample_config)
 
     # Generate workflow metadata
     _write_json(
-        root / "opencode" / "workflows" / "main-standard.json",
+        generated_artifacts[1],
         _build_workflow("main-standard", "main", all_skill_dirs),
     )
     _write_json(
-        root / "opencode" / "workflows" / "minimal-no-npx.json",
+        generated_artifacts[2],
         _build_workflow("minimal-no-npx", "minimal", minimal_skills),
     )
 
