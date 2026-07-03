@@ -81,6 +81,19 @@ Profiles:
 - `main-standard`: full skill set (default).
 - `minimal-no-npx`: reduced core set (Boltz2, DiffDock, GenMol, MSA-Search, OpenFold3, RFdiffusion).
 
+OpenCode SKILL header compatibility in this repo follows the current OpenCode
+format (`name` + `description` required; `license` / `compatibility` /
+`metadata` optional). Some skills also carry `allowed-tools` for cross-agent
+reuse; OpenCode ignores unknown frontmatter keys, so this causes no runtime
+issue. Note that the `allowed-tools` values (`Bash`, `Read`, `Write`,
+`AskUserQuestion`) do not match OpenCode's permission key names (`bash`,
+`read`, `edit`, `question`) — adding OpenCode-native permission/tool
+configuration is a planned future task.
+
+No OpenCode-specific hook/plugin runtime is bundled in this repository today;
+OpenCode integration here is SKILL.md-based plus install/config scripts under
+`scripts/opencode/`.
+
 ## Skill Catalog
 
 | Product | Description | Skills |
