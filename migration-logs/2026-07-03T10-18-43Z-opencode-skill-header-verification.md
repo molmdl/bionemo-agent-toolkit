@@ -28,6 +28,23 @@
      - `workflows/generative_protein_binder_design/complexa-binder-design/vendor/science-skills/alphafold_database_fetch_and_analyze/SKILL.md`
      - `workflows/generative_protein_binder_design/complexa-binder-design/vendor/science-skills/uniprot_database/SKILL.md`
 
+## Gap identified (2026-07-03 follow-up)
+
+The prior verification confirmed `allowed-tools` is ignored by OpenCode, but **missed checking whether the tool-name values used in `allowed-tools` are valid OpenCode permission keys**. They are not:
+
+| Value in `allowed-tools` | OpenCode permission key | Notes |
+|--------------------------|------------------------|-------|
+| `Bash`            | `bash`     | casing differs |
+| `Read`            | `read`     | casing differs |
+| `Write`           | `edit`     | name differs; OpenCode `edit` covers write + apply_patch |
+| `AskUserQuestion` | `question` | name differs |
+
+There is no runtime impact today (OpenCode ignores the field). If OpenCode-native permission/tool configuration is added in the future, these values must be remapped. Full key table documented in `migration-logs/2026-07-03T10-17-59Z-opencode-format-research.md`.
+
+## Future plan
+
+Add OpenCode-format `permission` and `tools` configuration to skills and `opencode/config/opencode.sample.json`, using OpenCode permission key names (`bash`, `read`, `edit`, `question`, etc.). This is a planned future task and was not in scope for the current verification pass.
+
 ## Hook compatibility status
 
 - No OpenCode hook/plugin runtime config is currently shipped in this repo for execution-time tool hooks.
